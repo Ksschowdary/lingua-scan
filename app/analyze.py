@@ -10,7 +10,7 @@ from openai import OpenAI
 
 from .languages import name_for
 
-MODEL = os.getenv("LINGUA_MODEL", "gemini-3.8-flash")
+MODEL = os.getenv("LINGUA_MODEL", "gemini-2.5-flash")
 
 STUDY_SCHEMA = {
     "type": "object",
