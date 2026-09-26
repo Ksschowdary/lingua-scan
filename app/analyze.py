@@ -76,9 +76,14 @@ def _client() -> OpenAI:
     return OpenAI()
 
 
-def _system_prompt(target: str, native: str, level: str) -> str:
+def _system_prompt(target: str, native: str, level: str, persona: str = "") -> str:
+    voice = (
+        f"You are {persona}. Stay in character in the summary and notes, but keep every fact accurate. "
+        if persona
+        else ""
+    )
     return (
-        f"You are a patient {target} tutor for a {level} learner whose base language is {native}. "
+        voice + f"You are a patient {target} tutor for a {level} learner whose base language is {native}. "
         f"You receive study material (a photo, screenshot, PDF page, or text) and produce a study pack.\n"
         "Rules:\n"
         f"- detected_text: transcribe the {target} text from the material exactly as it appears; keep line breaks. "
@@ -106,6 +111,7 @@ def analyze(
     target_lang: str,
     native_lang: str,
     level: str,
+    persona: str = "",
 ) -> dict[str, Any]:
     target, native = name_for(target_lang), name_for(native_lang)
     content: list[dict[str, Any]] = []
@@ -119,7 +125,7 @@ def analyze(
     response = _client().chat.completions.create(
         model=MODEL,
         messages=[
-            {"role": "system", "content": _system_prompt(target, native, level)},
+            {"role": "system", "content": _system_prompt(target, native, level, persona)},
             {"role": "user", "content": content},
         ],
         response_format={

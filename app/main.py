@@ -10,6 +10,8 @@ from pydantic import BaseModel
 from . import analyze
 from .extract import extract
 from .languages import LANGUAGES, tesseract_for
+from .spell import spell
+from .themes import THEMES, persona_for
 
 MAX_BYTES = 12 * 1024 * 1024
 STATIC_DIR = Path(__file__).resolve().parent.parent / "static"
@@ -25,9 +27,19 @@ class GradeRequest(BaseModel):
     native_lang: str = "en"
 
 
+class SpellRequest(BaseModel):
+    word: str
+    target_lang: str = "ja"
+
+
 @app.get("/api/config")
 def config() -> dict:
-    return {"languages": LANGUAGES, "ai_enabled": analyze.has_key(), "model": analyze.MODEL}
+    return {
+        "languages": LANGUAGES,
+        "themes": THEMES,
+        "ai_enabled": analyze.has_key(),
+        "model": analyze.MODEL,
+    }
 
 
 @app.post("/api/scan")
@@ -36,6 +48,7 @@ async def scan(
     target_lang: str = Form("ja"),
     native_lang: str = Form("en"),
     level: str = Form("beginner"),
+    instructor: str = Form(""),
 ) -> dict:
     data = await file.read()
     if not data:
@@ -67,6 +80,7 @@ async def scan(
             target_lang=target_lang,
             native_lang=native_lang,
             level=level,
+            persona=persona_for(instructor),
         )
     except Exception as exc:
         raise HTTPException(502, f"Analysis failed: {exc}") from exc
@@ -86,6 +100,11 @@ def grade_answer(req: GradeRequest) -> dict:
         )
     except Exception as exc:
         raise HTTPException(502, f"Grading failed: {exc}") from exc
+
+
+@app.post("/api/spell")
+def spell_word(req: SpellRequest) -> dict:
+    return spell(req.word, req.target_lang)
 
 
 @app.get("/")

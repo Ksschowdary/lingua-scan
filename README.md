@@ -8,6 +8,9 @@ that are graded with feedback.
   French, German, Italian, Portuguese, Russian, Hindi, Arabic, English).
 - Images are read by the vision model directly; local Tesseract OCR is used as a hint and as a fallback.
 - Short-answer questions are graded by the model, which accepts different wording and corrects mistakes.
+- Pick an anime world (background) and an instructor character; the instructor's voice is used in the study pack.
+- Spelling help breaks a word into characters with per-character readings, converts typed romaji to kana,
+  and speaks the word with the browser's speech synthesis.
 
 ## Run locally
 
@@ -32,7 +35,9 @@ locally, with no AI summary or grading.
 
 | Path | Purpose |
 | --- | --- |
-| `app/main.py` | FastAPI routes: `/api/config`, `/api/scan`, `/api/grade` |
+| `app/main.py` | FastAPI routes: `/api/config`, `/api/scan`, `/api/grade`, `/api/spell` |
+| `app/themes.py` | Anime worlds and their instructor characters |
+| `app/spell.py` | Character-by-character spelling and reading help (kana, hangul, cyrillic, latin) |
 | `app/extract.py` | File → text (image OCR, PDF, plain text) |
 | `app/analyze.py` | Prompting and JSON schema for the study pack, plus answer grading |
 | `static/` | Single-page frontend (no build step) |

@@ -8,8 +8,11 @@
 </head>
 <body>
 <button id="theme-toggle" type="button">Dark mode</button>
-<img class="mascot left" src="/static/char-left.webp" alt="" aria-hidden="true" />
-<img class="mascot right" src="/static/char-right.webp" alt="" aria-hidden="true" />
+<img class="mascot left" id="mascot-left" src="" alt="" aria-hidden="true" hidden />
+<div class="mascot right" id="instructor" hidden>
+  <div class="bubble" id="instructor-bubble"></div>
+  <img id="instructor-img" src="" alt="" />
+</div>
 <header>
   <h1>Lingua<span>Scan</span></h1>
   <p>Upload a screenshot, photo, PDF or text file of what you're studying. Get a summary, notes to write, and practice questions.</p>
@@ -17,6 +20,13 @@
 </header>
 
 <main>
+  <section class="card" id="world-card">
+    <h3>Choose your anime world</h3>
+    <div class="picker" id="theme-picker"></div>
+    <h3>Choose your instructor</h3>
+    <div class="picker chars" id="char-picker"></div>
+  </section>
+
   <section class="card" id="upload-card">
     <div class="controls">
       <label>I'm learning
@@ -54,6 +64,7 @@
       <button class="tab" data-tab="notes">Notes to write</button>
       <button class="tab" data-tab="vocab">Vocabulary</button>
       <button class="tab" data-tab="quiz">Practice</button>
+      <button class="tab" data-tab="spell">Spelling</button>
       <button class="tab" data-tab="source">Scanned text</button>
     </nav>
 
@@ -61,7 +72,16 @@
     <div class="card panel" id="panel-notes" hidden></div>
     <div class="card panel" id="panel-vocab" hidden></div>
     <div class="card panel" id="panel-quiz" hidden></div>
+    <div class="card panel" id="panel-spell" hidden></div>
     <div class="card panel" id="panel-source" hidden></div>
+  </section>
+  <section class="card" id="spell-card">
+    <h3>How do I spell &amp; say it?</h3>
+    <div class="answer-row">
+      <input type="text" id="spell-input" placeholder="Type a word or letter, e.g. ねこ" />
+      <button id="spell-btn">Show</button>
+    </div>
+    <div id="spell-out"></div>
   </section>
 </main>
 
