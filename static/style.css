@@ -1,15 +1,16 @@
 :root {
-  --card: #ffffff;
-  --card-2: #f1efe9;
+  --card: #ffffffdb;
+  --card-2: #ffffff8f;
   --text: #241f30;
   --muted: #6d687e;
   --accent: #6b57ff;
   --accent-2: #0f9b6c;
   --danger: #d6455c;
   --line: #241f3018;
-  --field: #faf9f6;
-  --shadow: 0 16px 40px #2b234617;
-  --page: radial-gradient(900px 500px at 15% -10%, #efe7ff 0%, #f8f6f1 55%, #f4f1ea 100%);
+  --field: #ffffffcc;
+  --shadow: 0 18px 44px #0b3b6b26;
+  --page: linear-gradient(#ffffff3d, #ffffff5c), url("/static/bg-ocean.webp") center / cover no-repeat fixed;
+  --blur: blur(10px);
   --radius: 16px;
 }
 
@@ -24,7 +25,8 @@
   --line: #ffffff14;
   --field: #12132a;
   --shadow: 0 20px 50px #00000040;
-  --page: radial-gradient(1200px 600px at 20% -10%, #2a2160 0%, #0f1020 60%);
+  --page: linear-gradient(#0b1030d6, #0b1030e8), url("/static/bg-ocean.webp") center / cover no-repeat fixed;
+  --blur: blur(10px);
 }
 
 * { box-sizing: border-box; }
@@ -34,7 +36,6 @@ body {
   padding: 0 20px 80px;
   font-family: "Inter", "Noto Sans JP", system-ui, -apple-system, sans-serif;
   background: var(--page);
-  background-attachment: fixed;
   color: var(--text);
   min-height: 100vh;
 }
@@ -52,6 +53,34 @@ body {
   font-size: 13px;
   cursor: pointer;
   box-shadow: var(--shadow);
+  backdrop-filter: var(--blur);
+}
+
+.mascot {
+  position: fixed;
+  bottom: 0;
+  height: min(46vh, 420px);
+  pointer-events: none;
+  user-select: none;
+  filter: drop-shadow(0 10px 24px #0b3b6b4d);
+  animation: float 6s ease-in-out infinite;
+  z-index: 1;
+}
+.mascot.left { left: 8px; }
+.mascot.right { right: 8px; animation-delay: -3s; }
+[data-theme="dark"] .mascot { opacity: .85; }
+
+@keyframes float {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-12px); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .mascot { animation: none; }
+}
+
+@media (max-width: 1280px) {
+  .mascot { display: none; }
 }
 
 header {
@@ -61,9 +90,21 @@ header {
   text-align: center;
 }
 
-header h1 { font-size: 40px; margin: 0 0 8px; letter-spacing: -1px; }
-header h1 span { color: var(--accent-2); }
-header p { color: var(--muted); margin: 0 auto; max-width: 560px; line-height: 1.5; }
+header h1 {
+  font-size: 44px;
+  margin: 0 0 10px;
+  letter-spacing: -1px;
+  color: #fff;
+  text-shadow: 0 3px 18px #0b3b6b8c;
+}
+header h1 span { color: #ffe27a; }
+header p {
+  color: #ffffff;
+  margin: 0 auto;
+  max-width: 560px;
+  line-height: 1.5;
+  text-shadow: 0 2px 10px #0b3b6bb3;
+}
 
 .badge {
   display: inline-block;
@@ -71,13 +112,15 @@ header p { color: var(--muted); margin: 0 auto; max-width: 560px; line-height: 1
   padding: 4px 12px;
   border-radius: 999px;
   font-size: 13px;
-  background: var(--card-2);
+  background: var(--card);
   border: 1px solid var(--line);
+  backdrop-filter: var(--blur);
 }
 .badge.warn { color: #b57c00; border-color: #b57c0055; }
 [data-theme="dark"] .badge.warn { color: #ffd166; border-color: #ffd16655; }
 
-main { max-width: 860px; margin: 0 auto; display: grid; gap: 20px; }
+main { max-width: 860px; margin: 0 auto; display: grid; gap: 20px; position: relative; z-index: 2; }
+header { position: relative; z-index: 2; }
 
 .card {
   background: var(--card);
@@ -85,6 +128,7 @@ main { max-width: 860px; margin: 0 auto; display: grid; gap: 20px; }
   border-radius: var(--radius);
   padding: 24px;
   box-shadow: var(--shadow);
+  backdrop-filter: var(--blur);
 }
 
 .controls {
@@ -112,7 +156,7 @@ select, input[type="text"], textarea {
 select:focus, textarea:focus, input:focus { outline: 2px solid var(--accent); }
 
 #dropzone {
-  border: 2px dashed var(--muted);
+  border: 2px dashed #6b57ff66;
   border-radius: var(--radius);
   padding: 36px 20px;
   text-align: center;
@@ -144,7 +188,7 @@ button.primary:disabled { opacity: .45; cursor: not-allowed; }
 .status { margin: 14px 0 0; color: var(--muted); font-size: 14px; text-align: center; }
 .status.error { color: var(--danger); }
 
-#results h2 { margin: 8px 0 0; font-size: 24px; }
+#results h2 { margin: 8px 0 0; font-size: 24px; color: #fff; text-shadow: 0 2px 12px #0b3b6b99; }
 
 .tabs { display: flex; flex-wrap: wrap; gap: 8px; margin: 16px 0 0; }
 .tab {
