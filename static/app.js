@@ -17,6 +17,19 @@ const el = {
   aiStatus: $("#ai-status"),
 };
 
+const themeToggle = $("#theme-toggle");
+
+function applyTheme(theme) {
+  document.documentElement.dataset.theme = theme;
+  themeToggle.textContent = theme === "dark" ? "Light mode" : "Dark mode";
+  localStorage.setItem("theme", theme);
+}
+
+applyTheme(localStorage.getItem("theme") || "light");
+themeToggle.addEventListener("click", () =>
+  applyTheme(document.documentElement.dataset.theme === "dark" ? "light" : "dark")
+);
+
 function setStatus(message, isError = false, busy = false) {
   el.status.hidden = !message;
   el.status.className = "status" + (isError ? " error" : "");
