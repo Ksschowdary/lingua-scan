@@ -88,16 +88,16 @@
     <!-- Mascot Chat Widget -->
     <div id="chat-widget" style="position: fixed; bottom: 20px; right: 20px; z-index: 1000; font-family: inherit;">
         <!-- Minimized Circular Avatar Tag -->
-        <div id="chat-tag" onclick="toggleChat()" style="background: #7c3aed; width: 60px; height: 60px; border-radius: 50%; cursor: pointer; box-shadow: 0 4px 15px rgba(0,0,0,0.4); display: flex; align-items: center; justify-content: center; overflow: hidden; border: 2px solid white;" title="Click to open your mascot!">
-            <img id="tag-avatar" src="https://i.imgur.com/350v95t.png" alt="Mascot" style="width: 100%; height: 100%; object-fit: cover;">
+        <div id="chat-tag" onclick="toggleChat()" style="background: linear-gradient(135deg, #ef4444, #f97316); width: 60px; height: 60px; border-radius: 50%; cursor: pointer; box-shadow: 0 4px 15px rgba(0,0,0,0.4); display: flex; align-items: center; justify-content: center; border: 2px solid white; font-size: 24px;" title="Click to open your mascot!">
+            <span id="tag-badge">🍖</span>
         </div>
 
         <!-- Expanded Chat Box -->
         <div id="chat-box" style="display: none; width: 350px; height: 480px; background: #1e1b4b; border: 1px solid #4c1d95; border-radius: 16px; flex-direction: column; overflow: hidden; box-shadow: 0 10px 30px rgba(0,0,0,0.5);">
-            <!-- Chat Header with Mascot Image & Name -->
+            <!-- Chat Header with Mascot Badge & Name -->
             <div style="background: #312e81; padding: 12px; display: flex; justify-content: space-between; align-items: center; color: white; font-weight: bold;">
                 <div style="display: flex; align-items: center; gap: 10px;">
-                    <img id="header-avatar" src="https://i.imgur.com/350v95t.png" alt="Mascot" style="width: 36px; height: 36px; border-radius: 50%; object-fit: cover; border: 1px solid white;">
+                    <div id="header-badge" style="width: 36px; height: 36px; border-radius: 50%; background: #ef4444; display: flex; align-items: center; justify-content: center; font-size: 16px; border: 1px solid white; box-shadow: 0 2px 5px rgba(0,0,0,0.3);">🍖</div>
                     <span id="chat-title-name">Luffy Assistant</span>
                 </div>
                 <button onclick="toggleChat()" style="background: none; border: none; color: white; cursor: pointer; font-size: 18px;">✕</button>
@@ -106,7 +106,7 @@
             <!-- Chat Messages Area -->
             <div id="chatHistory" style="flex: 1; padding: 12px; overflow-y: auto; display: flex; flex-direction: column; gap: 10px; color: #e2e8f0; font-size: 14px;">
                 <div style="display: flex; gap: 8px; align-items: flex-start;">
-                    <img class="msg-avatar" src="https://i.imgur.com/350v95t.png" style="width: 28px; height: 28px; border-radius: 50%; object-fit: cover; margin-top: 2px;">
+                    <div class="msg-badge" style="width: 26px; height: 26px; border-radius: 50%; background: #ef4444; display: flex; align-items: center; justify-content: center; font-size: 12px; margin-top: 2px; flex-shrink: 0; color: white; border: 1px solid white;">🍖</div>
                     <div style="background: #312e81; padding: 10px 12px; border-radius: 10px; max-width: 80%; line-height: 1.4;">
                         Hi! Upload a document and say "I'm ready" when you want me to quiz you on your lesson!
                     </div>
@@ -139,22 +139,27 @@
         let currentPack = null;
         let chatMessages = [];
 
-        // Authentic anime character artwork URLs for the crew
-        const mascotImages = {
-            "Luffy": "https://i.imgur.com/350v95t.png",
-            "Zoro": "https://i.imgur.com/8QjL423.png",
-            "Nami": "https://i.imgur.com/5XkQ92f.png",
-            "Chopper": "https://i.imgur.com/9KpW81a.png",
-            "Robin": "https://i.imgur.com/2YjL34b.png",
-            "Brook": "https://i.imgur.com/4ZmN56c.png"
+        // Custom styling and icons for each One Piece character mascot
+        const mascotConfig = {
+            "Luffy": { icon: "🍖", bg: "linear-gradient(135deg, #ef4444, #b91c1c)" },
+            "Zoro": { icon: "⚔️", bg: "linear-gradient(135deg, #22c55e, #15803d)" },
+            "Nami": { icon: "🍊", bg: "linear-gradient(135deg, #f97316, #c2410c)" },
+            "Chopper": { icon: "🌸", bg: "linear-gradient(135deg, #ec4899, #be185d)" },
+            "Robin": { icon: "📚", bg: "linear-gradient(135deg, #8b5cf6, #6d28d9)" },
+            "Brook": { icon: "💀", bg: "linear-gradient(135deg, #374151, #111827)" }
         };
 
         function updateMascotSelection(mascotName) {
-            const imgPath = mascotImages[mascotName] || mascotImages["Luffy"];
-            document.getElementById('tag-avatar').src = imgPath;
-            document.getElementById('header-avatar').src = imgPath;
+            const config = mascotConfig[mascotName] || mascotConfig["Luffy"];
+            document.getElementById('chat-tag').style.background = config.bg;
+            document.getElementById('tag-badge').innerText = config.icon;
+            document.getElementById('header-badge').style.background = config.bg;
+            document.getElementById('header-badge').innerText = config.icon;
             document.getElementById('chat-title-name').innerText = mascotName + " Assistant";
-            document.querySelectorAll('.msg-avatar').forEach(img => img.src = imgPath);
+            document.querySelectorAll('.msg-badge').forEach(el => {
+                el.style.background = config.bg;
+                el.innerText = config.icon;
+            });
         }
 
         function toggleChat() {
@@ -262,14 +267,16 @@
             const box = document.getElementById('chatHistory');
             const msg = document.createElement('div');
             
-            const activeImg = document.getElementById('header-avatar').src;
+            const activeBg = document.getElementById('header-badge').style.background;
+            const activeIcon = document.getElementById('header-badge').innerText;
+
             if (role === 'user') {
                 msg.className = 'bg-purple-900/50 p-2 rounded max-w-[85%] self-end text-right text-purple-100 text-xs';
                 msg.innerText = text;
             } else {
                 msg.className = 'bg-slate-800 p-2 rounded max-w-[85%] self-start text-slate-300 text-xs flex gap-2 items-start';
                 msg.innerHTML = `
-                    <img src="${activeImg}" style="width: 20px; height: 20px; border-radius: 50%; object-fit: cover; margin-top: 2px;">
+                    <div style="width: 22px; height: 22px; border-radius: 50%; background: ${activeBg}; display: flex; align-items: center; justify-content: center; font-size: 11px; margin-top: 2px; flex-shrink: 0; color: white; border: 1px solid white;">${activeIcon}</div>
                     <div style="flex:1;">${text}</div>
                     <button onclick="speakText('${text.replace(/'/g, "\\'")}', 'ja-JP')" style="background:none; border:none; cursor:pointer;" title="Speak">🗣️</button>
                 `;
