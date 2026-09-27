@@ -1,0 +1,248 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LinguaScan - Anime AI Language Companion</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-slate-900 text-white min-h-screen flex flex-col font-sans">
+
+    <!-- Navbar -->
+    <nav class="border-b border-slate-800 bg-slate-950 px-6 py-4 flex justify-between items-center">
+        <h1 class="text-2xl font-bold bg-gradient-to-r from-purple-400 to-pink-500 bg-clip-text text-transparent">
+            ✨ LinguaScan
+        </h1>
+        <div id="user-bar" class="flex gap-4 items-center">
+            <button onclick="openAuthModal()" class="bg-purple-600 hover:bg-purple-500 px-4 py-2 rounded-lg font-semibold text-sm">
+                Sign In / Register
+            </button>
+        </div>
+    </nav>
+
+    <!-- Main Workspace -->
+    <main class="flex-1 max-w-7xl w-full mx-auto p-6 grid grid-cols-1 md:grid-cols-3 gap-6">
+
+        <!-- Left Column: Upload & Options -->
+        <section class="bg-slate-800 border border-slate-700 rounded-xl p-6 flex flex-col gap-4">
+            <h2 class="text-xl font-bold text-purple-300">1. Upload Document</h2>
+            <form id="scanForm" class="flex flex-col gap-4">
+                <div>
+                    <label class="block text-xs uppercase text-slate-400 mb-1">Learning Target Language</label>
+                    <input type="text" id="target_lang" name="target_lang" value="Japanese" class="w-full bg-slate-900 border border-slate-700 rounded p-2">
+                </div>
+                <div>
+                    <label class="block text-xs uppercase text-slate-400 mb-1">Native Language</label>
+                    <input type="text" id="native_lang" name="native_lang" value="English" class="w-full bg-slate-900 border border-slate-700 rounded p-2">
+                </div>
+                <div>
+                    <label class="block text-xs uppercase text-slate-400 mb-1">Your Level</label>
+                    <select id="user_level" name="user_level" class="w-full bg-slate-900 border border-slate-700 rounded p-2">
+                        <option>Beginner</option>
+                        <option>Intermediate</option>
+                        <option>Advanced</option>
+                    </select>
+                </div>
+                <div>
+                    <label class="block text-xs uppercase text-slate-400 mb-1">Choose Mascot</label>
+                    <select id="instructor_name" name="instructor_name" class="w-full bg-slate-900 border border-slate-700 rounded p-2">
+                        <option value="Ren">Ren (Energetic Rival 🔥)</option>
+                        <option value="Aoi">Aoi (Calm Sensei 🌸)</option>
+                        <option value="Kuro">Kuro (Witty Companion 😼)</option>
+                    </select>
+                </div>
+                <div>
+                    <label class="block text-xs uppercase text-slate-400 mb-1">Document File (PDF or Image)</label>
+                    <input type="file" id="file" name="file" required class="w-full text-sm text-slate-400 border border-slate-700 rounded p-2 bg-slate-900">
+                </div>
+                <button type="submit" id="submitBtn" class="w-full bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-500 hover:to-pink-500 py-3 rounded-lg font-bold">
+                    🚀 Scan & Create Study Pack
+                </button>
+            </form>
+
+            <hr class="border-slate-700 my-2">
+
+            <!-- Quick Dictionary -->
+            <h2 class="text-lg font-bold text-pink-300">📖 Instant Dictionary</h2>
+            <div class="flex gap-2">
+                <input type="text" id="dictInput" placeholder="Enter English word..." class="flex-1 bg-slate-900 border border-slate-700 rounded p-2 text-sm">
+                <button onclick="lookupWord()" class="bg-pink-600 hover:bg-pink-500 px-3 py-2 rounded text-sm font-semibold">Translate</button>
+            </div>
+            <div id="dictOutput" class="text-xs bg-slate-900 p-3 rounded border border-slate-700 hidden flex-col gap-1"></div>
+        </section>
+
+        <!-- Center Column: Study Notes & Vocabulary -->
+        <section id="studyPackArea" class="bg-slate-800 border border-slate-700 rounded-xl p-6 md:col-span-2 overflow-y-auto max-h-[80vh]">
+            <div id="placeholder" class="h-full flex flex-col items-center justify-center text-slate-500 text-center">
+                <p class="text-4xl mb-2">📄</p>
+                <p>Upload a document to generate your mascot-guided study pack notes and interactive quiz!</p>
+            </div>
+            <div id="results" class="hidden flex-col gap-6"></div>
+        </section>
+
+    </main>
+
+    <!-- Mascot Chat Drawer -->
+    <div class="fixed bottom-4 right-4 w-96 bg-slate-950 border border-purple-500/30 rounded-xl shadow-2xl overflow-hidden flex flex-col">
+        <div class="bg-slate-900 p-3 border-b border-slate-800 flex justify-between items-center">
+            <span class="font-bold text-sm text-purple-400 flex items-center gap-2">
+                🤖 <span id="chatMascotName">Mascot Assistant</span>
+            </span>
+            <span class="text-xs bg-purple-900 text-purple-200 px-2 py-0.5 rounded">Type "I'm ready" to quiz</span>
+        </div>
+        <div id="chatHistory" class="p-3 h-64 overflow-y-auto flex flex-col gap-2 text-xs">
+            <div class="bg-slate-800 p-2 rounded max-w-[85%] self-start text-slate-300">
+                Hi! Upload a document and say "I'm ready" when you want me to quiz you on your lesson!
+            </div>
+        </div>
+        <div class="p-2 bg-slate-900 border-t border-slate-800 flex gap-2">
+            <input type="text" id="chatInput" placeholder="Ask a question or type 'I'm ready'..." class="flex-1 bg-slate-950 border border-slate-800 rounded p-2 text-xs text-white">
+            <button onclick="sendChatMessage()" class="bg-purple-600 hover:bg-purple-500 px-3 py-1.5 rounded text-xs font-semibold">Send</button>
+        </div>
+    </div>
+
+    <!-- Auth Modal -->
+    <div id="authModal" class="fixed inset-0 bg-black/70 hidden justify-center items-center p-4">
+        <div class="bg-slate-900 border border-slate-700 rounded-xl max-w-md w-full p-6 flex flex-col gap-4">
+            <h3 class="text-xl font-bold text-purple-400">Sign In to LinguaScan</h3>
+            <input type="text" id="authUsername" placeholder="Username" class="bg-slate-950 border border-slate-700 rounded p-2 text-sm">
+            <input type="password" id="authPassword" placeholder="Password" class="bg-slate-950 border border-slate-700 rounded p-2 text-sm">
+            <div class="flex gap-2">
+                <button onclick="handleAuth('/api/auth/login')" class="flex-1 bg-purple-600 hover:bg-purple-500 py-2 rounded font-semibold text-sm">Login</button>
+                <button onclick="handleAuth('/api/auth/register')" class="flex-1 bg-slate-800 hover:bg-slate-700 border border-slate-600 py-2 rounded font-semibold text-sm">Register</button>
+            </div>
+            <button onclick="closeAuthModal()" class="text-xs text-slate-500 hover:underline text-center">Close</button>
+        </div>
+    </div>
+
+    <script>
+        let currentPack = null;
+        let chatMessages = [];
+
+        document.getElementById('scanForm').onsubmit = async (e) => {
+            e.preventDefault();
+            const submitBtn = document.getElementById('submitBtn');
+            submitBtn.innerText = "⏳ Processing OCR & AI Analysis...";
+            submitBtn.disabled = true;
+
+            const formData = new FormData(e.target);
+            try {
+                const res = await fetch('/scan', { method: 'POST', body: formData });
+                const data = await res.json();
+                
+                if (res.ok) {
+                    currentPack = data;
+                    renderPack(data);
+                } else {
+                    alert("Error: " + data.detail);
+                }
+            } catch (err) {
+                alert("Failed to process document: " + err);
+            } finally {
+                submitBtn.innerText = "🚀 Scan & Create Study Pack";
+                submitBtn.disabled = false;
+            }
+        };
+
+        function renderPack(data) {
+            document.getElementById('placeholder').classList.add('hidden');
+            const resDiv = document.getElementById('results');
+            resDiv.classList.remove('hidden');
+            resDiv.classList.add('flex');
+
+            resDiv.innerHTML = `
+                <h2 class="text-2xl font-bold text-purple-300">${data.topic_title}</h2>
+                <div class="bg-slate-900 p-4 rounded-lg border border-slate-700">
+                    <h3 class="font-bold text-pink-400 mb-2">📌 Lesson Summary</h3>
+                    <ul class="list-disc pl-5 text-sm gap-1 flex flex-col">${data.summary_notes.map(n => `<li>${n}</li>`).join('')}</ul>
+                </div>
+                <div class="bg-slate-900 p-4 rounded-lg border border-slate-700">
+                    <h3 class="font-bold text-purple-400 mb-2">🔤 Key Vocabulary</h3>
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs">${data.vocabulary.map(v => `
+                        <div class="bg-slate-950 p-2 rounded border border-slate-800">
+                            <span class="font-bold text-pink-300">${v.word}</span> <span class="text-slate-400">(${v.reading})</span>
+                            <p class="text-slate-300">${v.translation}</p>
+                            <p class="text-slate-500 italic mt-1">${v.example}</p>
+                        </div>
+                    `).join('')}</div>
+                </div>
+            `;
+        }
+
+        async function sendChatMessage() {
+            const input = document.getElementById('chatInput');
+            const text = input.value.trim();
+            if (!text) return;
+
+            chatMessages.push({ role: 'user', content: text });
+            appendChat('user', text);
+            input.value = '';
+
+            const res = await fetch('/api/chat', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    messages: chatMessages,
+                    mascot: document.getElementById('instructor_name').value,
+                    target_lang: document.getElementById('target_lang').value,
+                    document_context: currentPack
+                })
+            });
+            const data = await res.json();
+            chatMessages.push({ role: 'assistant', content: data.reply });
+            appendChat('assistant', data.reply);
+        }
+
+        function appendChat(role, text) {
+            const box = document.getElementById('chatHistory');
+            const msg = document.createElement('div');
+            msg.className = role === 'user' 
+                ? 'bg-purple-900/50 p-2 rounded max-w-[85%] self-end text-right text-purple-100' 
+                : 'bg-slate-800 p-2 rounded max-w-[85%] self-start text-slate-300';
+            msg.innerText = text;
+            box.appendChild(msg);
+            box.scrollTop = box.scrollHeight;
+        }
+
+        async function lookupWord() {
+            const word = document.getElementById('dictInput').value;
+            if (!word) return;
+            const res = await fetch('/api/dictionary', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    word: word,
+                    target_lang: document.getElementById('target_lang').value,
+                    native_lang: document.getElementById('native_lang').value
+                })
+            });
+            const data = await res.json();
+            const out = document.getElementById('dictOutput');
+            out.classList.remove('hidden');
+            out.classList.add('flex');
+            out.innerHTML = `
+                <span class="font-bold text-pink-300">${data.word} (${data.reading})</span>
+                <span>${data.meaning}</span>
+                <span class="text-slate-400 italic">${data.example_target}</span>
+            `;
+        }
+
+        function openAuthModal() { document.getElementById('authModal').classList.remove('hidden'); document.getElementById('authModal').classList.add('flex'); }
+        function closeAuthModal() { document.getElementById('authModal').classList.add('hidden'); }
+
+        async function handleAuth(url) {
+            const form = new FormData();
+            form.append('username', document.getElementById('authUsername').value);
+            form.append('password', document.getElementById('authPassword').value);
+            const res = await fetch(url, { method: 'POST', body: form });
+            const data = await res.json();
+            if (res.ok) {
+                document.getElementById('user-bar').innerHTML = `<span class="text-sm text-purple-300 font-bold">👤 ${data.username} (${data.mascot})</span>`;
+                closeAuthModal();
+            } else {
+                alert(data.detail);
+            }
+        }
+    </script>
+</body>
+</html>

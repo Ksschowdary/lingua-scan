@@ -3,90 +3,91 @@ import json
 import time
 from openai import OpenAI
 
-def analyze_document_with_ai(extracted_text: str, target_lang: str, native_lang: str, user_level: str, instructor_name: str) -> dict:
-    base_url = os.environ.get("OPENAI_BASE_URL", "https://generativelanguage.googleapis.com/v1beta/openai/")
+def get_ai_client():
     api_key = os.environ.get("OPENAI_API_KEY")
+    base_url = os.environ.get("OPENAI_BASE_URL", "https://generativelanguage.googleapis.com/v1beta/openai/")
+    return OpenAI(api_key=api_key, base_url=base_url)
+
+def analyze_document_with_ai(extracted_text, target_lang, native_lang, user_level, instructor_name):
+    client = get_ai_client()
     
-    if not api_key:
-        raise ValueError("OPENAI_API_KEY environment variable is not set.")
+    prompt = f"""
+    You are an expert language tutor named {instructor_name}.
+    Analyze the following extracted text from a language learning document.
+    Target Language: {target_lang}
+    Native Language: {native_lang}
+    Learner Level: {user_level}
 
-    client = OpenAI(
-        base_url=base_url,
-        api_key=api_key
-    )
+    Extracted Text:
+    {extracted_text}
 
-    system_prompt = f"""You are {instructor_name}, a language tutor teaching {target_lang} to a {user_level} level student whose native language is {native_lang}.
-Analyze the provided document text and create a structured study pack in valid JSON format.
+    Return a JSON object containing:
+    1. "topic_title": A clear title for this lesson.
+    2. "summary_notes": Array of key notes and concept explanations in {native_lang}.
+    3. "vocabulary": Array of objects, each containing "word" (in {target_lang}), "reading" (phonetic/furigana/pinyin), "translation" (in {native_lang}), and "example" (sentence in {target_lang}).
+    4. "grammar_points": Array of objects, each containing "pattern", "explanation", and "example".
+    5. "quiz_questions": Array of objects, each containing "id" (1, 2, 3...), "question", "options" (array of 4 strings), "correct_answer", and "hint".
+    """
 
-JSON structure required:
-{{
-    "title": "Title of the lesson/study pack",
-    "summary": "Brief summary of the document text",
-    "vocabulary": [
-        {{
-            "term": "Word in {target_lang}",
-            "reading": "Pronunciation/Furigana/Romaji",
-            "meaning": "Meaning in {native_lang}",
-            "example": "Example sentence in {target_lang}",
-            "example_translation": "Example sentence translation in {native_lang}"
-        }}
-    ],
-    "grammar_points": [
-        {{
-            "point": "Grammar rule or pattern",
-            "explanation": "Explanation in {native_lang}",
-            "example": "Example in {target_lang}"
-        }}
-    ],
-    "exercises": [
-        {{
-            "question": "Practice question",
-            "options": ["Option A", "Option B", "Option C", "Option D"],
-            "answer": "Correct option",
-            "explanation": "Explanation in {native_lang}"
-        }}
-    ]
-}}
-Respond ONLY with valid JSON matching this schema. Do NOT include markdown code blocks, prefixes, or conversational text.
-"""
-
-    messages = [
-        {"role": "system", "content": system_prompt},
-        {"role": "user", "content": f"Document text to analyze:\n\n{extracted_text}"}
-    ]
-
-    max_retries = 3
-    response_text = ""
-
-    for attempt in range(max_retries):
+    for attempt in range(3):
         try:
             response = client.chat.completions.create(
                 model="gemini-3.8-flash",
-                messages=messages,
+                messages=[
+                    {"role": "system", "content": "You are a helpful AI language tutor. Always output valid JSON."},
+                    {"role": "user", "content": prompt}
+                ],
                 response_format={"type": "json_object"}
             )
-            response_text = response.choices[0].message.content.strip()
-            if response_text and not response_text.startswith("Internal Server"):
-                break
+            return json.loads(response.choices[0].message.content)
         except Exception as e:
-            if ("503" in str(e) or "500" in str(e) or "UNAVAILABLE" in str(e)) and attempt < max_retries - 1:
-                time.sleep(2 * (attempt + 1))
-                continue
-            raise e
+            if attempt == 2:
+                raise e
+            time.sleep(2)
 
-    # Cleanup Markdown wrappers if present
-    if response_text.startswith("```"):
-        lines = response_text.split("\n")
-        if lines[0].startswith("```"):
-            lines = lines[1:]
-        if lines and lines[-1].startswith("```"):
-            lines = lines[:-1]
-        response_text = "\n".join(lines).strip()
+def generate_mascot_reply(messages, mascot_name, target_lang, document_context=None):
+    client = get_ai_client()
+    
+    mascot_personas = {
+        "Ren": "You are Ren, an energetic anime rival mascot! You are super encouraging, competitive, and hype up the user.",
+        "Aoi": "You are Aoi, a calm and polite sensei mascot. You give detailed, patient explanations and gentle encouragement.",
+        "Kuro": "You are Kuro, a witty and playful mascot. You love clever puns, fun hints, and lighthearted teasing."
+    }
+    
+    system_instruction = mascot_personas.get(mascot_name, mascot_personas["Ren"])
+    system_instruction += f"\nThe user is learning {target_lang}. Keep responses conversational, short, and in-character."
+    
+    if document_context:
+        system_instruction += f"\nDocument Context for Quiz Mode:\n{json.dumps(document_context)}"
 
-    # Extract JSON object if surrounded by extra text
-    start_idx = response_text.find("{")
-    end_idx = response_text.rfind("}")
-    if start_idx != -1 and end_idx != -1:
-        response_text = response_text[start_idx:end_idx + 1]
+    formatted_messages = [{"role": "system", "content": system_instruction}] + messages
 
-    return json.loads(response_text)
+    response = client.chat.completions.create(
+        model="gemini-3.8-flash",
+        messages=formatted_messages
+    )
+    return response.choices[0].message.content
+
+def dictionary_lookup(word, target_lang, native_lang):
+    client = get_ai_client()
+    prompt = f"""
+    Translate and break down the word/phrase '{word}' for a learner.
+    Input Language: English / {native_lang}
+    Target Language: {target_lang}
+
+    Return JSON with:
+    - "word": Word in {target_lang}
+    - "reading": Pronunciation / Phonetics / Reading
+    - "meaning": Meaning in {native_lang}
+    - "example_target": Example sentence in {target_lang}
+    - "example_native": Example sentence translation in {native_lang}
+    """
+    response = client.chat.completions.create(
+        model="gemini-3.8-flash",
+        messages=[
+            {"role": "system", "content": "Return valid JSON."},
+            {"role": "user", "content": prompt}
+        ],
+        response_format={"type": "json_object"}
+    )
+    return json.loads(response.choices[0].message.content)
