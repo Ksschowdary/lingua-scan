@@ -85,11 +85,11 @@
 
     </main>
 
-    <!-- Mascot Chat Widget (Collapsible Circular Tag & Popout Box) -->
+    <!-- Mascot Chat Widget -->
     <div id="chat-widget" style="position: fixed; bottom: 20px; right: 20px; z-index: 1000; font-family: inherit;">
         <!-- Minimized Circular Avatar Tag -->
         <div id="chat-tag" onclick="toggleChat()" style="background: #7c3aed; width: 60px; height: 60px; border-radius: 50%; cursor: pointer; box-shadow: 0 4px 15px rgba(0,0,0,0.4); display: flex; align-items: center; justify-content: center; overflow: hidden; border: 2px solid white;" title="Click to open your mascot!">
-            <img id="tag-avatar" src="/static/assets/luffy.jpg" alt="Mascot" style="width: 100%; height: 100%; object-fit: cover;">
+            <img id="tag-avatar" src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150" alt="Mascot" style="width: 100%; height: 100%; object-fit: cover;">
         </div>
 
         <!-- Expanded Chat Box -->
@@ -97,7 +97,7 @@
             <!-- Chat Header with Mascot Image & Name -->
             <div style="background: #312e81; padding: 12px; display: flex; justify-content: space-between; align-items: center; color: white; font-weight: bold;">
                 <div style="display: flex; align-items: center; gap: 10px;">
-                    <img id="header-avatar" src="/static/assets/luffy.jpg" alt="Mascot" style="width: 36px; height: 36px; border-radius: 50%; object-fit: cover; border: 1px solid white;">
+                    <img id="header-avatar" src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150" alt="Mascot" style="width: 36px; height: 36px; border-radius: 50%; object-fit: cover; border: 1px solid white;">
                     <span id="chat-title-name">Luffy Assistant</span>
                 </div>
                 <button onclick="toggleChat()" style="background: none; border: none; color: white; cursor: pointer; font-size: 18px;">✕</button>
@@ -106,7 +106,7 @@
             <!-- Chat Messages Area -->
             <div id="chatHistory" style="flex: 1; padding: 12px; overflow-y: auto; display: flex; flex-direction: column; gap: 10px; color: #e2e8f0; font-size: 14px;">
                 <div style="display: flex; gap: 8px; align-items: flex-start;">
-                    <img class="msg-avatar" src="/static/assets/luffy.jpg" style="width: 28px; height: 28px; border-radius: 50%; object-fit: cover; margin-top: 2px;">
+                    <img class="msg-avatar" src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150" style="width: 28px; height: 28px; border-radius: 50%; object-fit: cover; margin-top: 2px;">
                     <div style="background: #312e81; padding: 10px 12px; border-radius: 10px; max-width: 80%; line-height: 1.4;">
                         Hi! Upload a document and say "I'm ready" when you want me to quiz you on your lesson!
                     </div>
@@ -139,17 +139,18 @@
         let currentPack = null;
         let chatMessages = [];
 
+        // Reliable avatar image links for each mascot
         const mascotImages = {
-            "Luffy": "/static/assets/luffy.jpg",
-            "Zoro": "/static/assets/zoro.jpg",
-            "Nami": "/static/assets/nami.jpg",
-            "Chopper": "/static/assets/chopper.jpg",
-            "Robin": "/static/assets/robin.jpg",
-            "Brook": "/static/assets/brook.jpg"
+            "Luffy": "https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150",
+            "Zoro": "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=150",
+            "Nami": "https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=150",
+            "Chopper": "https://images.unsplash.com/photo-1517841905240-472988babdf9?w=150",
+            "Robin": "https://images.unsplash.com/photo-1524504388940-b1c1722653e1?w=150",
+            "Brook": "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=150"
         };
 
         function updateMascotSelection(mascotName) {
-            const imgPath = mascotImages[mascotName] || "/static/assets/luffy.jpg";
+            const imgPath = mascotImages[mascotName] || mascotImages["Luffy"];
             document.getElementById('tag-avatar').src = imgPath;
             document.getElementById('header-avatar').src = imgPath;
             document.getElementById('chat-title-name').innerText = mascotName + " Assistant";
@@ -168,7 +169,6 @@
             }
         }
 
-        // Browser Text-to-Speech synthesis
         function speakText(text, lang = 'ja-JP') {
             if ('speechSynthesis' in window) {
                 window.speechSynthesis.cancel();
@@ -222,7 +222,7 @@
                         <div class="bg-slate-950 p-2 rounded border border-slate-800 flex flex-col gap-1">
                             <div>
                                 <span class="font-bold text-pink-300">${v.word}</span> <span class="text-slate-400">(${v.reading})</span>
-                                <button onclick="speakText('${v.word.replace(/'/g, "\\'")}', 'ja-JP')" class="ml-2 text-xs bg-purple-900 px-1.5 py-0.5 rounded cursor:pointer" title="Pronounce">🗣️</button>
+                                <button onclick="speakText('${v.word.replace(/'/g, "\\'")}', 'ja-JP')" class="ml-2 text-xs bg-purple-900 px-1.5 py-0.5 rounded cursor-pointer" title="Pronounce">🗣️</button>
                             </div>
                             <p class="text-slate-300">${v.translation}</p>
                             <p class="text-slate-500 italic">${v.example}</p>
@@ -255,7 +255,6 @@
             chatMessages.push({ role: 'assistant', content: data.reply });
             appendChat('assistant', data.reply);
             
-            // Auto speak assistant response
             speakText(data.reply, 'ja-JP');
         }
 
