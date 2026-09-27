@@ -61,7 +61,7 @@ async def scan(
     except ValueError as exc:
         raise HTTPException(415, str(exc)) from exc
 
-    if not analyze.has_key():
+    if not os.environ.get("OPENAI_API_KEY"): 
         if not extracted.text:
             raise HTTPException(
                 503,
