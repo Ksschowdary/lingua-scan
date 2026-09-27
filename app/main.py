@@ -2,6 +2,7 @@ import os
 import io
 import json
 import sqlite3
+from pathlib import Path
 from fastapi import FastAPI, UploadFile, File, Form, Request, HTTPException
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
@@ -11,10 +12,17 @@ import pytesseract
 from PIL import Image
 from app.analyze import analyze_document_with_ai, generate_mascot_reply, dictionary_lookup
 
-app = FastAPI()
+BASE_DIR = Path(__file__).resolve().parent
 
-app.mount("/static", StaticFiles(directory="app/static"), name="static")
-templates = Jinja2Templates(directory="app/templates")
+app = FastAPI(title="LinguaScan")
+
+# Static directory setup
+static_dir = BASE_DIR / "static"
+static_dir.mkdir(parents=True, exist_ok=True)
+app.mount("/static", StaticFiles(directory=str(static_dir)), name="static")
+
+# Templates directory setup using absolute pathing
+templates = Jinja2Templates(directory=str(BASE_DIR / "templates"))
 
 def init_db():
     conn = sqlite3.connect("database.db")
@@ -35,7 +43,7 @@ init_db()
 
 @app.get("/")
 async def read_root(request: Request):
-    return templates.TemplateResponse("index.html", {"request": request})
+    return templates.TemplateResponse(request=request, name="index.html")
 
 @app.post("/api/auth/register")
 async def register(username: str = Form(...), password: str = Form(...), mascot: str = Form("Ren")):
