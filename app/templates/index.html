@@ -45,10 +45,13 @@
                 </div>
                 <div>
                     <label class="block text-xs uppercase text-slate-400 mb-1">Choose Mascot</label>
-                    <select id="instructor_name" name="instructor_name" class="w-full bg-slate-900 border border-slate-700 rounded p-2">
-                        <option value="Ren">Ren (Energetic Rival 🔥)</option>
-                        <option value="Aoi">Aoi (Calm Sensei 🌸)</option>
-                        <option value="Kuro">Kuro (Witty Companion 😼)</option>
+                    <select id="instructor_name" name="instructor_name" class="w-full bg-slate-900 border border-slate-700 rounded p-2" onchange="updateMascotSelection(this.value)">
+                        <option value="Luffy">Luffy (Straw Hat Captain 🍖)</option>
+                        <option value="Zoro">Zoro (Master Swordsman ⚔️)</option>
+                        <option value="Nami">Nami (Navigator 🍊)</option>
+                        <option value="Chopper">Chopper (Doctor 🌸)</option>
+                        <option value="Robin">Robin (Archaeologist 📚)</option>
+                        <option value="Brook">Brook (Musician 💀)</option>
                     </select>
                 </div>
                 <div>
@@ -82,22 +85,39 @@
 
     </main>
 
-    <!-- Mascot Chat Drawer -->
-    <div class="fixed bottom-4 right-4 w-96 bg-slate-950 border border-purple-500/30 rounded-xl shadow-2xl overflow-hidden flex flex-col">
-        <div class="bg-slate-900 p-3 border-b border-slate-800 flex justify-between items-center">
-            <span class="font-bold text-sm text-purple-400 flex items-center gap-2">
-                🤖 <span id="chatMascotName">Mascot Assistant</span>
-            </span>
-            <span class="text-xs bg-purple-900 text-purple-200 px-2 py-0.5 rounded">Type "I'm ready" to quiz</span>
+    <!-- Mascot Chat Widget (Collapsible Circular Tag & Popout Box) -->
+    <div id="chat-widget" style="position: fixed; bottom: 20px; right: 20px; z-index: 1000; font-family: inherit;">
+        <!-- Minimized Circular Avatar Tag -->
+        <div id="chat-tag" onclick="toggleChat()" style="background: #7c3aed; width: 60px; height: 60px; border-radius: 50%; cursor: pointer; box-shadow: 0 4px 15px rgba(0,0,0,0.4); display: flex; align-items: center; justify-content: center; overflow: hidden; border: 2px solid white;" title="Click to open your mascot!">
+            <img id="tag-avatar" src="/static/assets/luffy.jpg" alt="Mascot" style="width: 100%; height: 100%; object-fit: cover;">
         </div>
-        <div id="chatHistory" class="p-3 h-64 overflow-y-auto flex flex-col gap-2 text-xs">
-            <div class="bg-slate-800 p-2 rounded max-w-[85%] self-start text-slate-300">
-                Hi! Upload a document and say "I'm ready" when you want me to quiz you on your lesson!
+
+        <!-- Expanded Chat Box -->
+        <div id="chat-box" style="display: none; width: 350px; height: 480px; background: #1e1b4b; border: 1px solid #4c1d95; border-radius: 16px; flex-direction: column; overflow: hidden; box-shadow: 0 10px 30px rgba(0,0,0,0.5);">
+            <!-- Chat Header with Mascot Image & Name -->
+            <div style="background: #312e81; padding: 12px; display: flex; justify-content: space-between; align-items: center; color: white; font-weight: bold;">
+                <div style="display: flex; align-items: center; gap: 10px;">
+                    <img id="header-avatar" src="/static/assets/luffy.jpg" alt="Mascot" style="width: 36px; height: 36px; border-radius: 50%; object-fit: cover; border: 1px solid white;">
+                    <span id="chat-title-name">Luffy Assistant</span>
+                </div>
+                <button onclick="toggleChat()" style="background: none; border: none; color: white; cursor: pointer; font-size: 18px;">✕</button>
             </div>
-        </div>
-        <div class="p-2 bg-slate-900 border-t border-slate-800 flex gap-2">
-            <input type="text" id="chatInput" placeholder="Ask a question or type 'I'm ready'..." class="flex-1 bg-slate-950 border border-slate-800 rounded p-2 text-xs text-white">
-            <button onclick="sendChatMessage()" class="bg-purple-600 hover:bg-purple-500 px-3 py-1.5 rounded text-xs font-semibold">Send</button>
+
+            <!-- Chat Messages Area -->
+            <div id="chatHistory" style="flex: 1; padding: 12px; overflow-y: auto; display: flex; flex-direction: column; gap: 10px; color: #e2e8f0; font-size: 14px;">
+                <div style="display: flex; gap: 8px; align-items: flex-start;">
+                    <img class="msg-avatar" src="/static/assets/luffy.jpg" style="width: 28px; height: 28px; border-radius: 50%; object-fit: cover; margin-top: 2px;">
+                    <div style="background: #312e81; padding: 10px 12px; border-radius: 10px; max-width: 80%; line-height: 1.4;">
+                        Hi! Upload a document and say "I'm ready" when you want me to quiz you on your lesson!
+                    </div>
+                </div>
+            </div>
+
+            <!-- Input Bar -->
+            <div style="padding: 12px; background: #312e81; display: flex; gap: 8px;">
+                <input type="text" id="chatInput" placeholder="Ask a question or type 'I'm ready'..." style="flex: 1; padding: 9px 12px; border-radius: 8px; border: 1px solid #4c1d95; background: #1e1b4b; color: white; outline: none;" onkeypress="if(event.key === 'Enter') sendChatMessage()">
+                <button onclick="sendChatMessage()" style="background: #7c3aed; color: white; border: none; padding: 9px 14px; border-radius: 8px; cursor: pointer; font-weight: bold;">Send</button>
+            </div>
         </div>
     </div>
 
@@ -118,6 +138,46 @@
     <script>
         let currentPack = null;
         let chatMessages = [];
+
+        const mascotImages = {
+            "Luffy": "/static/assets/luffy.jpg",
+            "Zoro": "/static/assets/zoro.jpg",
+            "Nami": "/static/assets/nami.jpg",
+            "Chopper": "/static/assets/chopper.jpg",
+            "Robin": "/static/assets/robin.jpg",
+            "Brook": "/static/assets/brook.jpg"
+        };
+
+        function updateMascotSelection(mascotName) {
+            const imgPath = mascotImages[mascotName] || "/static/assets/luffy.jpg";
+            document.getElementById('tag-avatar').src = imgPath;
+            document.getElementById('header-avatar').src = imgPath;
+            document.getElementById('chat-title-name').innerText = mascotName + " Assistant";
+            document.querySelectorAll('.msg-avatar').forEach(img => img.src = imgPath);
+        }
+
+        function toggleChat() {
+            const tag = document.getElementById('chat-tag');
+            const box = document.getElementById('chat-box');
+            if (box.style.display === 'none') {
+                box.style.display = 'flex';
+                tag.style.display = 'none';
+            } else {
+                box.style.display = 'none';
+                tag.style.display = 'flex';
+            }
+        }
+
+        // Browser Text-to-Speech synthesis
+        function speakText(text, lang = 'ja-JP') {
+            if ('speechSynthesis' in window) {
+                window.speechSynthesis.cancel();
+                const utterance = new SpeechSynthesisUtterance(text);
+                utterance.lang = lang;
+                utterance.rate = 0.9;
+                window.speechSynthesis.speak(utterance);
+            }
+        }
 
         document.getElementById('scanForm').onsubmit = async (e) => {
             e.preventDefault();
@@ -159,10 +219,13 @@
                 <div class="bg-slate-900 p-4 rounded-lg border border-slate-700">
                     <h3 class="font-bold text-purple-400 mb-2">🔤 Key Vocabulary</h3>
                     <div class="grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs">${data.vocabulary.map(v => `
-                        <div class="bg-slate-950 p-2 rounded border border-slate-800">
-                            <span class="font-bold text-pink-300">${v.word}</span> <span class="text-slate-400">(${v.reading})</span>
+                        <div class="bg-slate-950 p-2 rounded border border-slate-800 flex flex-col gap-1">
+                            <div>
+                                <span class="font-bold text-pink-300">${v.word}</span> <span class="text-slate-400">(${v.reading})</span>
+                                <button onclick="speakText('${v.word.replace(/'/g, "\\'")}', 'ja-JP')" class="ml-2 text-xs bg-purple-900 px-1.5 py-0.5 rounded cursor:pointer" title="Pronounce">🗣️</button>
+                            </div>
                             <p class="text-slate-300">${v.translation}</p>
-                            <p class="text-slate-500 italic mt-1">${v.example}</p>
+                            <p class="text-slate-500 italic">${v.example}</p>
                         </div>
                     `).join('')}</div>
                 </div>
@@ -191,15 +254,27 @@
             const data = await res.json();
             chatMessages.push({ role: 'assistant', content: data.reply });
             appendChat('assistant', data.reply);
+            
+            // Auto speak assistant response
+            speakText(data.reply, 'ja-JP');
         }
 
         function appendChat(role, text) {
             const box = document.getElementById('chatHistory');
             const msg = document.createElement('div');
-            msg.className = role === 'user' 
-                ? 'bg-purple-900/50 p-2 rounded max-w-[85%] self-end text-right text-purple-100' 
-                : 'bg-slate-800 p-2 rounded max-w-[85%] self-start text-slate-300';
-            msg.innerText = text;
+            
+            const activeImg = document.getElementById('header-avatar').src;
+            if (role === 'user') {
+                msg.className = 'bg-purple-900/50 p-2 rounded max-w-[85%] self-end text-right text-purple-100 text-xs';
+                msg.innerText = text;
+            } else {
+                msg.className = 'bg-slate-800 p-2 rounded max-w-[85%] self-start text-slate-300 text-xs flex gap-2 items-start';
+                msg.innerHTML = `
+                    <img src="${activeImg}" style="width: 20px; height: 20px; border-radius: 50%; object-fit: cover; margin-top: 2px;">
+                    <div style="flex:1;">${text}</div>
+                    <button onclick="speakText('${text.replace(/'/g, "\\'")}', 'ja-JP')" style="background:none; border:none; cursor:pointer;" title="Speak">🗣️</button>
+                `;
+            }
             box.appendChild(msg);
             box.scrollTop = box.scrollHeight;
         }
@@ -221,7 +296,10 @@
             out.classList.remove('hidden');
             out.classList.add('flex');
             out.innerHTML = `
-                <span class="font-bold text-pink-300">${data.word} (${data.reading})</span>
+                <div class="flex justify-between items-center">
+                    <span class="font-bold text-pink-300">${data.word} (${data.reading})</span>
+                    <button onclick="speakText('${data.word.replace(/'/g, "\\'")}', 'ja-JP')" class="text-xs bg-purple-900 px-1 py-0.5 rounded">🗣️ Listen</button>
+                </div>
                 <span>${data.meaning}</span>
                 <span class="text-slate-400 italic">${data.example_target}</span>
             `;
