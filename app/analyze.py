@@ -47,7 +47,7 @@ JSON structure required:
         }}
     ]
 }}
-Respond ONLY with raw JSON. No markdown backticks or commentary.
+Respond ONLY with valid JSON matching this schema. Do NOT include markdown code blocks, prefixes, or conversational text.
 """
 
     messages = [
@@ -62,23 +62,31 @@ Respond ONLY with raw JSON. No markdown backticks or commentary.
         try:
             response = client.chat.completions.create(
                 model="gemini-3.8-flash",
-                messages=messages
+                messages=messages,
+                response_format={"type": "json_object"}
             )
-            response_text = response.choices[0].message.content
-            break
+            response_text = response.choices[0].message.content.strip()
+            if response_text and not response_text.startswith("Internal Server"):
+                break
         except Exception as e:
-            if ("503" in str(e) or "UNAVAILABLE" in str(e)) and attempt < max_retries - 1:
+            if ("503" in str(e) or "500" in str(e) or "UNAVAILABLE" in str(e)) and attempt < max_retries - 1:
                 time.sleep(2 * (attempt + 1))
                 continue
             raise e
 
-    # Clean potential markdown block formatting
+    # Cleanup Markdown wrappers if present
     if response_text.startswith("```"):
         lines = response_text.split("\n")
         if lines[0].startswith("```"):
             lines = lines[1:]
         if lines and lines[-1].startswith("```"):
             lines = lines[:-1]
-        response_text = "\n".join(lines)
+        response_text = "\n".join(lines).strip()
+
+    # Extract JSON object if surrounded by extra text
+    start_idx = response_text.find("{")
+    end_idx = response_text.rfind("}")
+    if start_idx != -1 and end_idx != -1:
+        response_text = response_text[start_idx:end_idx + 1]
 
     return json.loads(response_text)
