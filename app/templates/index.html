@@ -139,7 +139,15 @@
         let currentPack = null;
         let chatMessages = [];
 
-        // Custom styling and icons for each One Piece character mascot
+        // Check if user session was already saved in browser memory on page load
+        window.onload = function() {
+            const savedUser = localStorage.getItem('lingua_user');
+            if (savedUser) {
+                const userData = JSON.parse(savedUser);
+                showLoggedInUser(userData.username, userData.mascot);
+            }
+        };
+
         const mascotConfig = {
             "Luffy": { icon: "🍖", bg: "linear-gradient(135deg, #ef4444, #b91c1c)" },
             "Zoro": { icon: "⚔️", bg: "linear-gradient(135deg, #22c55e, #15803d)" },
@@ -321,11 +329,29 @@
             const res = await fetch(url, { method: 'POST', body: form });
             const data = await res.json();
             if (res.ok) {
-                document.getElementById('user-bar').innerHTML = `<span class="text-sm text-purple-300 font-bold">👤 ${data.username} (${data.mascot})</span>`;
+                // Save session in localStorage so it remembers you signed in
+                localStorage.setItem('lingua_user', JSON.stringify({ username: data.username, mascot: data.mascot }));
+                showLoggedInUser(data.username, data.mascot);
                 closeAuthModal();
             } else {
                 alert(data.detail);
             }
+        }
+
+        function showLoggedInUser(username, mascot) {
+            document.getElementById('user-bar').innerHTML = `
+                <span class="text-sm text-purple-300 font-bold">👤 ${username} (${mascot || 'Luffy'})</span>
+                <button onclick="logout()" class="bg-rose-600 hover:bg-rose-500 px-3 py-1.5 rounded-lg text-xs font-semibold">Logout</button>
+            `;
+        }
+
+        function logout() {
+            localStorage.removeItem('lingua_user');
+            document.getElementById('user-bar').innerHTML = `
+                <button onclick="openAuthModal()" class="bg-purple-600 hover:bg-purple-500 px-4 py-2 rounded-lg font-semibold text-sm">
+                    Sign In / Register
+                </button>
+            `;
         }
     </script>
 </body>
