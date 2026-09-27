@@ -20,5 +20,5 @@ COPY . .
 
 EXPOSE 10000
 
-# Start Uvicorn app server
-CMD ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "10000"]
+# Start Uvicorn with 1 worker to stay under 512MB RAM
+CMD ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "10000", "--workers", "1"]

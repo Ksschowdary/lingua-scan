@@ -85,12 +85,14 @@ async def scan(
         extracted_text = ""
 
         if file.filename.lower().endswith(".pdf"):
-            images = pdf2image.convert_from_bytes(contents)
+            # Process PDF at lower DPI (150) to prevent RAM spikes
+            images = pdf2image.convert_from_bytes(contents, dpi=150, thread_count=1)
             for img in images:
                 extracted_text += pytesseract.image_to_string(img) + "\n"
+                img.close()
         else:
-            image = Image.open(io.BytesIO(contents))
-            extracted_text = pytesseract.image_to_string(image)
+            with Image.open(io.BytesIO(contents)) as image:
+                extracted_text = pytesseract.image_to_string(image)
 
         if not extracted_text.strip():
             return JSONResponse(status_code=400, content={"detail": "Could not extract text from document."})
